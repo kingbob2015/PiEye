@@ -10,7 +10,7 @@ def run():
     camera = TempCamera()
     while True:
         frame = camera.next_frame()
-        if (temp_motion_detect(frame)):
+        if temp_motion_detect(frame):
             temp_message_system(config.get_config("messaging"), "Bob", "Hey Bob Some Motion Was Detected")
 
         # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
