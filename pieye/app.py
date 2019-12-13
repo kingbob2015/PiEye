@@ -1,10 +1,13 @@
 import cv2
 import os
 from config.config import Config
-
+from log.logger import Logger
 
 def run():
     # TODO: Check for config file and add some error handling
+    logger = Logger.get_instance()
+    logger.log("test message")
+
     config = Config(os.path.dirname(__file__)+"/config.json")
 
     camera = TempCamera()
@@ -13,11 +16,11 @@ def run():
         if temp_motion_detect(frame):
             temp_message_system(config.get_config("messaging"), "Bob", "Hey Bob Some Motion Was Detected")
 
-        # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        #
-        # cv2.imshow('frame', gray)
-        # if cv2.waitKey(1) & 0xFF == ord('q'):
-        #     break
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        cv2.imshow('frame', gray)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
     camera.__del__()
 
