@@ -10,6 +10,7 @@ class LogLevel(enum.Enum):
     WARN = 2
     ERROR = 3
 
+
 class Logger:
     """
     The Logger class  singleton that can take parameters for log level from the LogLevel class and log file path
