@@ -1,12 +1,12 @@
 import cv2
 import os
 from config.config import Config
-from log.logger import Logger
+from log.logger import Logger, LogLevel
 
 def run():
     # TODO: Check for config file and add some error handling
     logger = Logger.get_instance()
-    logger.log("test message")
+    logger.log("test message", LogLevel.INFO)
 
     config = Config(os.path.dirname(__file__)+"/config.json")
 
