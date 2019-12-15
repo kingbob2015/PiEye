@@ -1,2 +1,8 @@
 Python File Structure:
 https://dev.to/codemouse92/dead-simple-python-project-structure-and-imports-38c6
+
+Python OpenCV Tutorial:
+https://pythonprogramming.net/loading-images-python-opencv-tutorial/
+
+Python Dunder Methods
+https://dbader.org/blog/python-dunder-methods
