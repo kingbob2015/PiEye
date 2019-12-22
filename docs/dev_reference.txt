@@ -6,3 +6,6 @@ https://pythonprogramming.net/loading-images-python-opencv-tutorial/
 
 Python Dunder Methods
 https://dbader.org/blog/python-dunder-methods
+
+Motion Detect and Flask Website with OpenCV
+https://www.pyimagesearch.com/2019/09/02/opencv-stream-video-to-web-browser-html-page/
