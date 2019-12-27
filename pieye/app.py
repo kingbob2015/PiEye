@@ -19,12 +19,19 @@ current_frame = None
 total_frames = 0
 # The camera that is being used to retrieve frames
 camera = None
+# The logger instance
+logger = None
 
 
 def run():
     """
     Entry point for the program. Splits the main logic loop into its own thread and starts the web server.
     """
+
+    # Create our logger singleton instance for the rest of the application to use
+    global logger
+    logger = Logger.get_instance()
+
     global camera
     camera = TempCamera()
 
@@ -32,8 +39,10 @@ def run():
     t = Thread(target=main_loop, args=())
     t.daemon = True
     t.start()
-
-    website.webstreaming.app.run(host='0.0.0.0', port=5555, debug=True, use_reloader=False, threaded=True)
+    try:
+        website.webstreaming.app.run(host='0.0.0.0', port=5555, debug=True, use_reloader=False, threaded=True)
+    except Exception as e:
+        logger.log("Web server failed to start: " + str(e), LogLevel.ERROR)
 
     t.join()
 
@@ -48,9 +57,7 @@ def main_loop():
     global current_frame
     global total_frames
     global camera
-
-    # Create our logger singleton instance for the rest of the application to use
-    logger = Logger.get_instance()
+    global logger
 
     # Load up our config to pass to components that need it
     config = Config(os.path.dirname(__file__) + "/config.json")
@@ -61,9 +68,18 @@ def main_loop():
     while True:
         current_frame = camera.get_frame()
         total_frames += 1
-        current_frame = imutils.resize(current_frame, width=400)
+        try:
+            current_frame = imutils.resize(current_frame, width=400)
+        except AttributeError as e:
+            if current_frame is None:
+                logger.log("current frame was none", LogLevel.ERROR)
+            else:
+                logger.log("failed to resize current frame: " + str(e), LogLevel.ERROR)
 
-        motion_detect(md)
+        try:
+            motion_detect(md)
+        except Exception as e:
+            logger.log("Motion detection function failed: " + str(e), LogLevel.ERROR)
 
         # Send our frame to the output frame in the web server to display
         with website.webstreaming.lock:
