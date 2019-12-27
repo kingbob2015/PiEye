@@ -1,6 +1,8 @@
+"""
+This file is the main bootstrap for PiEye. Handles setting up the application and the main control loop.
+"""
 import cv2
 import os
-from imutils.video import VideoStream
 import imutils
 from threading import Thread
 import datetime
@@ -9,14 +11,24 @@ from log.logger import Logger, LogLevel
 from motionDetection.motiondetection import MotionDetector
 import website.webstreaming
 
+# Threshold variable to start motion detection with minimum number of frames
 md_frameCount = 5
+# The current frame being analyzed
 current_frame = None
+# Total frame count
 total_frames = 0
+# The camera that is being used to retrieve frames
 camera = None
 
+
 def run():
+    """
+    Entry point for the program. Splits the main logic loop into its own thread and starts the web server.
+    """
     global camera
     camera = TempCamera()
+
+    # Thread off the main logic loop so that the web server can run on the main thread
     t = Thread(target=main_loop, args=())
     t.daemon = True
     t.start()
@@ -27,9 +39,10 @@ def run():
 
     camera.delete()
 
+
 def main_loop():
     """
-    Main loop for the program
+    Main logic loop for the program.
     """
 
     global current_frame
@@ -42,11 +55,8 @@ def main_loop():
     # Load up our config to pass to components that need it
     config = Config(os.path.dirname(__file__) + "/config.json")
 
+    # Create the motion detect object
     md = MotionDetector(accumWeight=0.1)
-
-    # t = Thread(target=website.webstreaming.app.run, kwargs={'host': '0.0.0.0', 'port': '5555', 'debug': True, 'threaded': True, 'use_reloader': False})
-    # t.daemon = True
-    # t.start()
 
     while True:
         current_frame = camera.get_frame()
@@ -55,18 +65,24 @@ def main_loop():
 
         motion_detect(md)
 
+        # Send our frame to the output frame in the web server to display
         with website.webstreaming.lock:
             website.webstreaming.outputFrame = current_frame.copy()
-        # TEMP CODE FOR SHOWING AN IMAGE
 
+        # TEMP CODE FOR SHOWING AN IMAGE. STILL NEEDED FOR A KILL SWITCH ON THE THREAD
         cv2.imshow('frame', current_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         # END TEMP CODE
 
 
-
 def motion_detect(md):
+    """
+    Function handles the control logic of motion detection. Currently adds a box around the motion if it is detected
+    via the MotionDetector object.
+
+    @param: md: the motion detector object
+    """
     global current_frame
     global total_frames
     global md_frameCount
@@ -114,6 +130,7 @@ class TempCamera:
 
     def delete(self):
         self.__del__()
+
 
 # END TEMP CODE
 

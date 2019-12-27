@@ -1,3 +1,8 @@
+"""
+This file contains the Logger class that is a singleton for logging to a log file and the LogLevel class enum
+for INFO, WARN, and ERROR level logging that controls what is logged from log messages.
+"""
+
 import os
 import enum
 
