@@ -4,7 +4,7 @@ This file is the main bootstrap for PiEye. Handles setting up the application an
 import cv2
 import os
 import imutils
-from threading import Thread
+from threading import Thread, Lock
 import datetime
 from config.config import Config
 from log.logger import Logger, LogLevel
@@ -25,7 +25,7 @@ logger = None
 
 def run():
     """
-    Entry point for the program. Splits the main logic loop into its own thread and starts the web server.
+    Entry point for the program. Starts the web server in its own thread and begins the main loop.
     """
 
     # Create our logger singleton instance for the rest of the application to use
@@ -35,18 +35,15 @@ def run():
     global camera
     camera = TempCamera()
 
-    # Thread off the main logic loop so that the web server can run on the main thread
-    t = Thread(target=main_loop, args=())
-    t.daemon = True
-    t.start()
     try:
-        website.webstreaming.app.run(host='0.0.0.0', port=5555, debug=True, use_reloader=False, threaded=True)
+        web_app = Thread(target=website.webstreaming.app.run,
+                         kwargs={'host': '127.0.0.1', 'port': 5000, 'debug': True, 'use_reloader': False,
+                                 'threaded': True})
+        web_app.daemon = True
+        web_app.start()
     except Exception as e:
         logger.log("Web server failed to start: " + str(e), LogLevel.ERROR)
-
-    t.join()
-
-    camera.delete()
+    main_loop()
 
 
 def main_loop():
@@ -83,13 +80,21 @@ def main_loop():
 
         # Send our frame to the output frame in the web server to display
         with website.webstreaming.lock:
-            website.webstreaming.outputFrame = current_frame.copy()
+            # Kills the application based on a switch in the web server. Could be done a better way to have a callback.
+            if website.webstreaming.kill_switch:
+                camera.delete()
+                break
+            else:
+                try:
+                    website.webstreaming.set_output_frame(current_frame.copy())
+                except AttributeError as e:
+                    if current_frame is None:
+                        logger.log("current frame was none", LogLevel.ERROR)
+                    else:
+                        logger.log("failed to copy current frame: " + str(e), LogLevel.ERROR)
 
-        # TEMP CODE FOR SHOWING AN IMAGE. STILL NEEDED FOR A KILL SWITCH ON THE THREAD
-        cv2.imshow('frame', current_frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-        # END TEMP CODE
+    logger.log("Exiting Application", LogLevel.INFO)
+    exit()
 
 
 def motion_detect(md):
