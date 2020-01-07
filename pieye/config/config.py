@@ -1,12 +1,17 @@
 import json
 from log.logger import Logger, LogLevel
 
+"""
+This file contains the Config class which loads in and stores/ updates configuration values for the PiEye application.
+"""
+
 
 class Config:
     """
     The Config class holds the config data for the application ingested from an external config file
 
     """
+
     def __init__(self, config_file=None):
         """
         The constructor for the config class

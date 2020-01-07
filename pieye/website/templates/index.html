@@ -1,0 +1,12 @@
+<html>
+  <head>
+    <title>PiEye</title>
+  </head>
+  <body>
+    <h1>PiEye</h1>
+    <img src="{{ url_for('video_feed') }}">
+    <form action="kill_app">
+      <button type="submit">Kill Application</button>
+    </form>
+  </body>
+</html>
