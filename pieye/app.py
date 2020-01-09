@@ -66,7 +66,7 @@ def main_loop():
         current_frame = camera.get_frame()
         total_frames += 1
         try:
-            current_frame = imutils.resize(current_frame, width=400)
+            current_frame = imutils.resize(current_frame, width=1080)
         except AttributeError as e:
             if current_frame is None:
                 logger.log("current frame was none", LogLevel.ERROR)

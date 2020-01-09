@@ -1,7 +1,7 @@
 """
 This file handles the web server and streaming of video for PiEye. Runs a Flask web server.
 """
-from flask import Response, Flask, render_template
+from flask import Response, Flask, render_template, request
 import threading
 import cv2
 from log.logger import Logger, LogLevel
@@ -47,8 +47,16 @@ def gen():
 def index():
     return render_template("index.html")
 
+@app.route("/login", methods=['POST'])
+def password_entry():
+    print(request.form)
+    password = request.form["password"]
+    if password == "Biley":
+        return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
+    else:
+        return "Incorrect Password"
 
-@app.route("/video_feed")
+#@app.route("/video_feed")
 def video_feed():
     return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
 

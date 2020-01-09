@@ -4,7 +4,11 @@
   </head>
   <body>
     <h1>PiEye</h1>
-    <img src="{{ url_for('video_feed') }}">
+    <form action="login" method="POST">
+      Password: <br>
+      <input type="text" name="password">
+      <input type="submit" value="Submit">
+    </form>
     <form action="kill_app">
       <button type="submit">Kill Application</button>
     </form>
