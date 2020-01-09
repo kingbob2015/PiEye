@@ -37,7 +37,7 @@ def run():
 
     try:
         web_app = Thread(target=website.webstreaming.app.run,
-                         kwargs={'host': '127.0.0.1', 'port': 5000, 'debug': True, 'use_reloader': False,
+                         kwargs={'host': '0.0.0.0', 'port': 5000, 'debug': True, 'use_reloader': False,
                                  'threaded': True})
         web_app.daemon = True
         web_app.start()
