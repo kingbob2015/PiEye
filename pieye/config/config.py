@@ -18,18 +18,27 @@ class Config:
 
         @param config_file: The path to the config file to ingest JSON data from
         """
-        self.__logger = Logger.get_instance()
+        self._logger = Logger.get_instance()
         if config_file:
             try:
                 with open(config_file) as cFile:
-                    self.__config = json.load(cFile)
+                    self._config = json.load(cFile)
             except FileNotFoundError:
-                self.__logger.log("No config file was found at {}".format(config_file), LogLevel.ERROR)
-                __config = {}
+                self._logger.log("No config file was found at {}".format(config_file), LogLevel.ERROR)
+                _config = {}
 
         else:
-            self.__logger.log("No config file parameter found", LogLevel.ERROR)
-            self.__config = {}
+            self._logger.log("No config file parameter found", LogLevel.ERROR)
+            self._config = {}
+
+    """
+    The string representation of the Config class. Will output all config values.
+    """
+    def __str__(self):
+        ret_string = 'The Configuration Loaded Is: \n'
+        for k, v in self.get_all_config().items():
+            ret_string += f'{k} : {v} \n'
+        return ret_string
 
     def get_config(self, key):
         """
@@ -39,10 +48,10 @@ class Config:
 
         @return: The value of the config value or None if it didn't exist
         """
-        if key in self.__config[key]:
-            return self.__config[key]
+        if key in self._config.keys():
+            return self._config[key]
         else:
-            self.__logger.log("The key of {} does not exist in the config".format(key), LogLevel.ERROR)
+            self._logger.log("The key of {} does not exist in the config".format(key), LogLevel.ERROR)
             return None
 
     def get_all_config(self):
@@ -51,7 +60,7 @@ class Config:
 
         @return: The entire config dictionary
         """
-        return self.__config
+        return self._config
 
     def update_config(self, key, value):
         """
@@ -60,4 +69,4 @@ class Config:
         @param: key: the key of the config value
         @param value: the value of the config value
         """
-        self.__config[key] = value
+        self._config[key] = value

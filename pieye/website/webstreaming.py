@@ -49,7 +49,6 @@ def index():
 
 @app.route("/login", methods=['POST'])
 def password_entry():
-    print(request.form)
     password = request.form["password"]
     if password == "Biley":
         return Response(gen(), mimetype="multipart/x-mixed-replace; boundary=frame")
