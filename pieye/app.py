@@ -6,10 +6,15 @@ import os
 import imutils
 from threading import Thread, Lock
 import datetime
+
 from config.config import Config
 from log.logger import Logger, LogLevel
 from motionDetection.motiondetection import MotionDetector
+from messaging.messenger import TextMessenger
 import website.webstreaming
+
+# Constant to define the delay to send a new motion detection message
+MESSAGE_DELAY = 100
 
 # Threshold variable to start motion detection with minimum number of frames
 md_frameCount = 5
@@ -58,15 +63,21 @@ def main_loop():
 
     # Load up our config to pass to components that need it
     config = Config(os.path.dirname(__file__) + "/config.json")
+    print(config)
 
     # Create the motion detect object
     md = MotionDetector(accumWeight=0.1)
+    motion_detected = False
+    lastMotionMessageSent = datetime.datetime.now()
+
+    # Create our text messenger object
+    text_messenger = TextMessenger(config)
 
     while True:
         current_frame = camera.get_frame()
         total_frames += 1
         try:
-            current_frame = imutils.resize(current_frame, width=400)
+            current_frame = imutils.resize(current_frame, width=1080)
         except AttributeError as e:
             if current_frame is None:
                 logger.log("current frame was none", LogLevel.ERROR)
@@ -74,9 +85,18 @@ def main_loop():
                 logger.log("failed to resize current frame: " + str(e), LogLevel.ERROR)
 
         try:
-            motion_detect(md)
+            motion_detected = motion_detect(md)
         except Exception as e:
             logger.log("Motion detection function failed: " + str(e), LogLevel.ERROR)
+            motion_detected = False
+
+        # Send message if motion detection occurred
+        if motion_detected:
+            current_time = datetime.datetime.now()
+            if (current_time - lastMotionMessageSent).total_seconds() > MESSAGE_DELAY:
+                lastMotionMessageSent = current_time
+                text_messenger.send_message("Bob", "Motion occurred on your PiEye!!!")
+
 
         # Send our frame to the output frame in the web server to display
         with website.webstreaming.lock:
@@ -108,6 +128,8 @@ def motion_detect(md):
     global total_frames
     global md_frameCount
 
+    motion_detected = False
+
     gray = cv2.cvtColor(current_frame, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (7, 7), 0)
 
@@ -123,8 +145,9 @@ def motion_detect(md):
             (thresh, (minX, minY, maxX, maxY)) = motion
             cv2.rectangle(current_frame, (minX, minY), (maxX, maxY),
                           (0, 0, 255), 2)
-
+            motion_detected = True
     md.update(gray)
+    return motion_detected
 
 
 # TEMP CODE THAT WILL BE SUBBED FOR REAL CODE
