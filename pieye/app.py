@@ -14,7 +14,7 @@ from messaging.messenger import TextMessenger
 import website.webstreaming
 
 # Constant to define the delay to send a new motion detection message
-MESSAGE_DELAY = 100
+MESSAGE_DELAY = 10
 
 # Threshold variable to start motion detection with minimum number of frames
 md_frameCount = 5
@@ -153,23 +153,23 @@ def motion_detect(md):
 # TEMP CODE THAT WILL BE SUBBED FOR REAL CODE
 class TempCamera:
     def __init__(self):
-        self.__cam = cv2.VideoCapture(0)
+        self._cam = cv2.VideoCapture(0)
         self.frame = None
-        ret, self.frame = self.__cam.read()
-        Thread(target=self.__update, args=()).start()
+        ret, self.frame = self._cam.read()
+        Thread(target=self._update, args=()).start()
 
     def __del__(self):
         self.release_camera()
 
-    def __update(self):
+    def _update(self):
         while True:
-            ret, self.frame = self.__cam.read()
+            ret, self.frame = self._cam.read()
 
     def get_frame(self):
         return self.frame
 
     def release_camera(self):
-        self.__cam.release()
+        self._cam.release()
         cv2.destroyAllWindows()
 
     def delete(self):

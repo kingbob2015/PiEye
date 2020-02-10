@@ -21,7 +21,7 @@ class Logger:
     The Logger class  singleton that can take parameters for log level from the LogLevel class and log file path
     Only access the Logger class via get_instance
     """
-    __instance, __file, __logLevel = None, None, None
+    _instance, _file, _logLevel = None, None, None
 
     @staticmethod
     def get_instance(log_level=LogLevel.INFO, log_file=os.path.dirname(__file__) + "/../log.txt"):
@@ -33,19 +33,19 @@ class Logger:
 
         @return: The instance of the singleton Logger
         """
-        if Logger.__instance is None:
+        if Logger._instance is None:
             Logger(log_level, log_file)
-        return Logger.__instance
+        return Logger._instance
 
     def __init__(self, log_level, log_file):
-        if Logger.__instance is not None:
+        if Logger._instance is not None:
             raise Exception("This class is a singleton and one is created")
         else:
-            Logger.__file = log_file
-            with open(self.__file, "w") as file:
+            Logger._file = log_file
+            with open(self._file, "w") as file:
                 file.write("PiEye Log\n---------------------\n")
-            Logger.__logLevel = log_level
-            Logger.__instance = self
+            Logger._logLevel = log_level
+            Logger._instance = self
 
     def log(self, log_message, log_level):
         """
@@ -54,6 +54,6 @@ class Logger:
         @param: log_message: the message to log to the file that the Logger was instantiated with
         @param log_level: the level that the log message is logging for from the enum of LogLevel
         """
-        if log_level.value >= Logger.__logLevel.value:
-            with open(self.__file, "a") as file:
+        if log_level.value >= Logger._logLevel.value:
+            with open(self._file, "a") as file:
                 file.write(log_message + "\n")
