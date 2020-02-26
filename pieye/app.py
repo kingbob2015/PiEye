@@ -62,7 +62,7 @@ def main_loop():
     global logger
 
     # Load up our config to pass to components that need it
-    config = Config(os.path.dirname(__file__) + "/config.json")
+    config = Config(os.path.dirname(os.path.abspath(__file__)) + "/config.json")
     print(config)
 
     # Create the motion detect object

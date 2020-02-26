@@ -25,7 +25,7 @@ class Config:
                     self._config = json.load(cFile)
             except FileNotFoundError:
                 self._logger.log("No config file was found at {}".format(config_file), LogLevel.ERROR)
-                _config = {}
+                self._config = {}
 
         else:
             self._logger.log("No config file parameter found", LogLevel.ERROR)
