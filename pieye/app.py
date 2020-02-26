@@ -6,6 +6,7 @@ import os
 import imutils
 from threading import Thread, Lock
 import datetime
+import sys
 
 from config.config import Config
 from log.logger import Logger, LogLevel
@@ -14,7 +15,7 @@ from messaging.messenger import TextMessenger
 import website.webstreaming
 
 # Constant to define the delay to send a new motion detection message
-MESSAGE_DELAY = 10
+MESSAGE_DELAY = 100
 
 # Threshold variable to start motion detection with minimum number of frames
 md_frameCount = 5
@@ -46,10 +47,9 @@ def run():
                                  'threaded': True})
         web_app.daemon = True
         web_app.start()
+        main_loop()
     except Exception as e:
         logger.log("Web server failed to start: " + str(e), LogLevel.ERROR)
-    main_loop()
-
 
 def main_loop():
     """
@@ -112,9 +112,8 @@ def main_loop():
                         logger.log("current frame was none", LogLevel.ERROR)
                     else:
                         logger.log("failed to copy current frame: " + str(e), LogLevel.ERROR)
-
     logger.log("Exiting Application", LogLevel.INFO)
-    exit()
+    sys.exit()
 
 
 def motion_detect(md):

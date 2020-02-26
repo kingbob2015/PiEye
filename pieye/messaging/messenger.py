@@ -21,21 +21,10 @@ class Messenger(ABC):
     def __init__(self, config: Config):
         self._configObject = config
         self._logger = Logger.get_instance()
-
-        self._messenger_dict = config.get_config("messaging")
+        self._messenger_dict = self._configObject.get_config("messaging")
         self._server_connection = None
         if self._messenger_dict:
-            try:
-                self._server_connection = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-                self._server_connection.ehlo()
-                self._server_connection.login(self._messenger_dict["messenger_login"]["email_address"],
-                                              self._messenger_dict["messenger_login"]["email_password"])
-            except KeyError:
-                self._logger.log('The messenger_login dict did not contain email_address and/or email_password',
-                                 LogLevel.ERROR)
-            except Exception as e:
-                self._logger.log(f'The exception {e} was triggered', LogLevel.ERROR)
-
+            self._connect_server()
         else:
             self._logger.log('No messenger_login dict found in config object, messaging system will not work',
                              LogLevel.ERROR)
@@ -46,6 +35,24 @@ class Messenger(ABC):
     """
     def __del__(self):
         self._server_connection.close()
+
+    """
+    Instance method to try to connect to the messaging server.
+    """
+    def _connect_server(self):
+        if self._server_connection:
+            self._server_connection.close()
+        self._server_connection = None
+        try:
+            self._server_connection = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+            self._server_connection.ehlo()
+            self._server_connection.login(self._messenger_dict["messenger_login"]["email_address"],
+                                          self._messenger_dict["messenger_login"]["email_password"])
+        except KeyError:
+            self._logger.log('The messenger_login dict did not contain email_address and/or email_password',
+                             LogLevel.ERROR)
+        except Exception as e:
+            self._logger.log(f'The exception {e} was triggered', LogLevel.ERROR)
 
     """
     This function is an abstract function to be implemented by child classes to send a message
@@ -96,12 +103,15 @@ class TextMessenger(Messenger):
             self._logger.log('No names_to_numbers mapping included in the config', LogLevel.ERROR)
             return
         try:
-            m = f'From: Pi Eye {self._messenger_dict["messenger_login"]["email_address"]}\n' \
-                     f'To: {name} {numbers_dict[name][0]}@{self._sms_gateways[numbers_dict[name][1].lower()]}\n' \
-                     f'Subject: PiEye Message\n' \
-                     f'{message}\n'
-            self._server_connection.sendmail('PiEye', f'{numbers_dict[name][0]}@'
-                                                      f'{self._sms_gateways[numbers_dict[name][1].lower()]}', m)
+            if self._server_connection is None:
+                self._connect_server()
+            else:
+                m = f'From: Pi Eye {self._messenger_dict["messenger_login"]["email_address"]}\n' \
+                         f'To: {name} {numbers_dict[name][0]}@{self._sms_gateways[numbers_dict[name][1].lower()]}\n' \
+                         f'Subject: PiEye Message\n' \
+                         f'{message}\n'
+                self._server_connection.sendmail('PiEye', f'{numbers_dict[name][0]}@'
+                                                          f'{self._sms_gateways[numbers_dict[name][1].lower()]}', m)
         except KeyError:
             self._logger.log(f'{name} did not exist in the names_to_numbers dict', LogLevel.ERROR)
         except Exception as e:
